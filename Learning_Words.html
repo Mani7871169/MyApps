@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Save to Local Storage</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+
+    <label for="word">Word:</label>
+    <input type="text" id="word">
+    <label for="meaning">Meaning:</label>
+    <input type="text" id="meaning">
+    <button onclick="saveData()">Save</button>
+    
+    <table id="dataTable">
+        <thead>
+            <tr>
+                <th>Sl.No</th>
+                <th>Word</th>
+                <th>Meaning</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", loadData);
+
+        function saveData() {
+            let word = document.getElementById("word").value;
+            let meaning = document.getElementById("meaning").value;
+            if (word && meaning) {
+                let entries = JSON.parse(localStorage.getItem("dictionary")) || [];
+                entries.push({ word, meaning });
+                localStorage.setItem("dictionary", JSON.stringify(entries));
+                loadData();
+                document.getElementById("word").value = "";
+                document.getElementById("meaning").value = "";
+            } else {
+                alert("Please enter both word and meaning.");
+            }
+        }
+
+        function loadData() {
+            let tableBody = document.querySelector("#dataTable tbody");
+            tableBody.innerHTML = "";
+            let entries = JSON.parse(localStorage.getItem("dictionary")) || [];
+            entries.forEach((entry,index) => {
+                let row = `<tr><td>${index+1}</td><td>${entry.word.toUpperCase()}</td><td>${entry.meaning}</td></tr>`;
+                tableBody.innerHTML += row;
+            });
+        }
+    </script>
+</body>
+</html>

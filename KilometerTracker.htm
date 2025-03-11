@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kilometer Tracker</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="container mt-5">
+    <h2 class="mb-4">Kilometer Tracker</h2>
+    <form id="kilometerForm">
+        <div class="form-group">
+            <label for="startDate">Start Date:</label>
+            <input type="date" id="startDate" name="startDate" class="form-control" required>
+            <div id="startDateError" class="error-message"></div>
+        </div>
+
+        <div class="form-group">
+            <label for="startKm">Starting Kilometer:</label>
+            <input type="number" id="startKm" name="startKm" class="form-control" required>
+            <div id="startKmError" class="error-message"></div>
+        </div>
+
+        <div class="form-group">
+            <label for="endDate">End Date:</label>
+            <input type="date" id="endDate" name="endDate" class="form-control" required>
+            <div id="endDateError" class="error-message"></div>
+        </div>
+
+        <div class="form-group">
+            <label for="endKm">Ending Kilometer:</label>
+            <input type="number" id="endKm" name="endKm" class="form-control" required>
+            <div id="endKmError" class="error-message"></div>
+        </div>
+
+        <div class="form-group">
+            <label for="description">Description:</label>
+            <textarea id="description" name="description" class="form-control" rows="4"></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+
+    <table id="dataTable" class="table mt-5">
+        <thead>
+            <tr>
+                <th>Start Date</th>
+                <th>Starting Kilometer</th>
+                <th>End Date</th>
+                <th>Ending Kilometer</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $("#kilometerForm").submit(function(event) {
+            event.preventDefault();
+
+            // Clear previous error messages
+            $(".error-message").text("");
+
+            // Field-level validation
+            var isValid = true;
+            if (!$("#startDate").val()) {
+                $("#startDateError").text("Start Date is required.");
+                isValid = false;
+            }
+            if (!$("#startKm").val()) {
+                $("#startKmError").text("Starting Kilometer is required.");
+                isValid = false;
+            }
+            if (!$("#endDate").val()) {
+                $("#endDateError").text("End Date is required.");
+                isValid = false;
+            }
+            if (!$("#endKm").val()) {
+                $("#endKmError").text("Ending Kilometer is required.");
+                isValid = false;
+            }
+            if ($("#startKm").val() >= $("#endKm").val()) {
+                $("#startKmError").text("Starting Kilometer must be less than Ending Kilometer.");
+                isValid = false;
+            }
+
+            if (isValid) {
+                // Append data to table
+                var startDate = $("#startDate").val();
+                var startKm = $("#startKm").val();
+                var endDate = $("#endDate").val();
+                var endKm = $("#endKm").val();
+                var description = $("#description").val();
+
+                $("#dataTable tbody").append("<tr><td>" + startDate + "</td><td>" + startKm + "</td><td>" + endDate + "</td><td>" + endKm + "</td><td>" + description + "</td></tr>");
+
+                // Clear form fields
+                $("#kilometerForm")[0].reset();
+            } else {
+                // Scroll to the first error message
+                $("html, body").animate({ scrollTop: $(".error-message:first").offset().top - 20 }, 500);
+            }
+        });
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Currency Total Calculator</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h2>Currency Total Calculator</h2>
+    <table border="1" cellpadding="5">
+        <tr>
+            <th>Denomination</th>
+            <th>Count</th>
+            <th>Subtotal</th>
+        </tr>
+        <tr><td>1 Rupee</td> <td><input type="number" class="currency" data-value="1" value="0"></td> <td class="subtotal">0</td></tr>
+        <tr><td>2 Rupees</td> <td><input type="number" class="currency" data-value="2" value="0"></td> <td class="subtotal">0</td></tr>
+        <tr><td>5 Rupees</td> <td><input type="number" class="currency" data-value="5" value="0"></td> <td class="subtotal">0</td></tr>
+        <tr><td>10 Rupees</td> <td><input type="number" class="currency" data-value="10" value="0"></td> <td class="subtotal">0</td></tr>
+        <tr><td>20 Rupees</td> <td><input type="number" class="currency" data-value="20" value="0"></td> <td class="subtotal">0</td></tr>
+        <tr><td>50 Rupees</td> <td><input type="number" class="currency" data-value="50" value="0"></td> <td class="subtotal">0</td></tr>
+        <tr><td>100 Rupees</td> <td><input type="number" class="currency" data-value="100" value="0"></td> <td class="subtotal">0</td></tr>
+        <tr><td>200 Rupees</td> <td><input type="number" class="currency" data-value="200" value="0"></td> <td class="subtotal">0</td></tr>
+        <tr><td>500 Rupees</td> <td><input type="number" class="currency" data-value="500" value="0"></td> <td class="subtotal">0</td></tr>
+        <tr><td>1000 Rupees</td> <td><input type="number" class="currency" data-value="1000" value="0"></td> <td class="subtotal">0</td></tr>
+        <tr><td>2000 Rupees</td> <td><input type="number" class="currency" data-value="2000" value="0"></td> <td class="subtotal">0</td></tr>
+    </table>
+    <br>
+    <button id="calculateButton">Calculate Total</button>
+    <button id="clearButton">Clear</button>
+    <h3>Total Amount: <span id="totalAmount">0</span> Rupees</h3>
+
+    <script>
+        $(document).ready(function() {
+            function updateSubtotals() {
+                var total = 0;
+                $(".currency").each(function() {
+                    var count = parseInt($(this).val()) || 0;
+                    var value = parseInt($(this).data("value"));
+                    var subtotal = count * value;
+                    $(this).closest("tr").find(".subtotal").text(subtotal);
+                    total += subtotal;
+                });
+                $("#totalAmount").text(total);
+            }
+
+            $(".currency").on("input", function() {
+                updateSubtotals();
+            });
+
+            $("#calculateButton").click(function() {
+                updateSubtotals();
+            });
+
+            $("#clearButton").click(function() {
+                $(".currency").val(0);
+                $(".subtotal").text(0);
+                $("#totalAmount").text(0);
+            });
+        });
+    </script>
+</body>
+</html>

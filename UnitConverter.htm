@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unit Converter</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script>
+        function toggleInputFields() {
+            let category = document.getElementById("category").value;
+            let valueField = document.getElementById("valueField");
+            let bmiFields = document.getElementById("bmiFields");
+            let heightFields = document.getElementById("heightFields");
+
+            valueField.style.display = "none";
+            bmiFields.style.display = "none";
+            heightFields.style.display = "none";            
+
+            if (category === "BMI") {
+                valueField.style.display = "none";
+                bmiFields.style.display = "block";
+            } else if (category === "heightToCm") {
+		heightFields.style.display = "block";      
+            } else {
+                valueField.style.display = "block";
+                bmiFields.style.display = "none";
+            }
+        }
+
+        function calculate() {
+            let category = document.getElementById("category").value;
+            let result = 0;
+            let formula = "";
+
+            if (category === "BMI") {
+                let weight = parseFloat(document.getElementById("weight").value);
+                let height = parseFloat(document.getElementById("height").value);
+
+                if (isNaN(weight) || isNaN(height) || height <= 0) {
+                    alert("Please enter valid weight and height.");
+                    return;
+                }
+
+                result = (weight / (height * height)).toFixed(2);
+                formula = `BMI = ${weight} kg ÷ (${height} m × ${height} m) = ${result}`;
+            } 
+            else if (category === "heightToCm") {
+                let feet = parseFloat(document.getElementById("feet").value);
+                let inches = parseFloat(document.getElementById("inches").value);
+
+                if (isNaN(feet) || isNaN(inches) || feet < 0 || inches < 0) {
+                    alert("Please enter valid feet and inches.");
+                    return;
+                }
+
+                result = ((feet * 30.48) + (inches * 2.54)).toFixed(2);
+                formula = `${feet} feet + ${inches} inches = ${result} cm`;
+            } 
+            else {
+                let inputValue = parseFloat(document.getElementById("value").value);
+                if (isNaN(inputValue)) {
+                    alert("Please enter a valid number.");
+                    return;
+                }
+
+                switch (category) {
+                    case "cmToMeter": result = (inputValue / 100).toFixed(2); formula = `${inputValue} cm ÷ 100 = ${result} meter`; break;
+                    case "meterToKm": result = (inputValue / 1000).toFixed(2); formula = `${inputValue} meter ÷ 1000 = ${result} km`; break;
+                    case "kmToMile": result = (inputValue * 0.621371).toFixed(2); formula = `${inputValue} km × 0.621371 = ${result} miles`; break;
+                    case "mileToKm": result = (inputValue * 1.60934).toFixed(2); formula = `${inputValue} miles × 1.60934 = ${result} km`; break;
+                    case "cmToInch": result = (inputValue * 0.393701).toFixed(2); formula = `${inputValue} cm × 0.393701 = ${result} inches`; break;
+                    case "inchToCm": result = (inputValue * 2.54).toFixed(2); formula = `${inputValue} inches × 2.54 = ${result} cm`; break;
+                    case "cmToKm": result = (inputValue / 100000).toFixed(6); formula = `${inputValue} cm ÷ 100,000 = ${result} km`; break;
+                    case "kmToCm": result = (inputValue * 100000).toFixed(2); formula = `${inputValue} km × 100,000 = ${result} cm`; break;
+                    case "kmToMeter": result = (inputValue * 1000).toFixed(2); formula = `${inputValue} km × 1000 = ${result} meters`; break;
+                    case "inchToMeter": result = (inputValue * 0.0254).toFixed(4); formula = `${inputValue} inches × 0.0254 = ${result} meters`; break;
+                    case "kgToPound": result = (inputValue * 2.20462).toFixed(2); formula = `${inputValue} kg × 2.20462 = ${result} pounds`; break;
+                    case "poundToKg": result = (inputValue / 2.20462).toFixed(2); formula = `${inputValue} pounds ÷ 2.20462 = ${result} kg`; break;
+                    case "gramToKg": result = (inputValue / 1000).toFixed(2); formula = `${inputValue} grams ÷ 1000 = ${result} kg`; break;
+                    case "kgToGram": result = (inputValue * 1000).toFixed(2); formula = `${inputValue} kg × 1000 = ${result} grams`; break;
+                    case "cToF": result = ((inputValue * 9/5) + 32).toFixed(2); formula = `(${inputValue}°C × 9/5) + 32 = ${result}°F`; break;
+                    case "fToC": result = ((inputValue - 32) * 5/9).toFixed(2); formula = `(${inputValue}°F - 32) × 5/9 = ${result}°C`; break;
+                    case "kmhToMph": result = (inputValue * 0.621371).toFixed(2); formula = `${inputValue} km/h × 0.621371 = ${result} mph`; break;
+                    case "mphToKmh": result = (inputValue * 1.60934).toFixed(2); formula = `${inputValue} mph × 1.60934 = ${result} km/h`; break;
+		    case "cmToHeight":
+                        let feet = Math.floor(inputValue / 30.48);
+                        let inches = ((inputValue / 2.54) - (feet * 12)).toFixed(1);
+                        result = `${feet} feet ${inches} inches`;
+                        formula = `${inputValue} cm = ${feet} feet ${inches} inches`;
+                        break;
+                    default: alert("Please select a valid category."); return;
+                }
+            }
+
+            document.getElementById("result").value = formula;
+        }
+
+        function resetFields() {
+            document.getElementById("category").selectedIndex = 0;
+            document.getElementById("value").value = "";
+            document.getElementById("weight").value = "";
+            document.getElementById("height").value = "";
+            document.getElementById("feet").value = "";
+            document.getElementById("inches").value = "";
+            document.getElementById("result").value = "";
+            toggleInputFields();
+        }
+    </script>
+</head>
+<body class="bg-light">
+    <div class="container mt-5">
+        <div class="card shadow-lg">
+            <div class="card-header bg-primary text-white text-center">
+                <h4>Unit Converter</h4>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label for="category" class="form-label">Category</label>
+                    <select id="category" class="form-select" onchange="toggleInputFields()">
+                        <option value="">Select</option>
+                        <optgroup label="Length">
+                            <option value="cmToMeter">CM to Meter</option>
+                            <option value="meterToKm">Meter to Kilometer</option>
+                            <option value="kmToMile">Kilometer to Mile</option>
+                            <option value="mileToKm">Mile to Kilometer</option>
+                            <option value="cmToInch">CM to Inch</option>
+                            <option value="inchToCm">Inch to CM</option>
+                            <option value="cmToKm">CM to Kilometer</option>
+                            <option value="kmToCm">Kilometer to CM</option>
+                            <option value="kmToMeter">Kilometer to Meter</option>
+                            <option value="inchToMeter">Inch to Meter</option>
+			    <option value="cmToHeight">CM to Feet & Inches</option>
+                        </optgroup>
+                        <optgroup label="Weight">
+                            <option value="kgToPound">Kilogram to Pound</option>
+                            <option value="poundToKg">Pound to Kilogram</option>
+                            <option value="gramToKg">Gram to Kilogram</option>
+                            <option value="kgToGram">Kilogram to Gram</option>
+                        </optgroup>
+                        <optgroup label="Temperature">
+                            <option value="cToF">Celsius to Fahrenheit</option>
+                            <option value="fToC">Fahrenheit to Celsius</option>
+                        </optgroup>
+                        <optgroup label="Speed">
+                            <option value="kmhToMph">Kilometers per hour to Miles per hour</option>
+                            <option value="mphToKmh">Miles per hour to Kilometers per hour</option>
+                        </optgroup>
+                        <optgroup label="Health">
+                            <option value="BMI">BMI (Weight in KG)</option>
+			    <option value="heightToCm">Feet & Inches to CM</option>
+                        </optgroup>
+                    </select>
+                </div>
+
+                <!-- Single Value Input (Default) -->
+                <div id="valueField" class="mb-3">
+                    <label for="value" class="form-label">Value</label>
+                    <input type="number" id="value" class="form-control" placeholder="Enter value">
+                </div>
+
+                <!-- BMI Inputs -->
+                <div id="bmiFields" class="mb-3" style="display: none;">
+                    <label for="weight" class="form-label">Weight (kg)</label>
+                    <input type="number" id="weight" class="form-control" placeholder="Enter weight">
+                    
+                    <label for="height" class="form-label mt-2">Height (m)</label>
+                    <input type="number" id="height" class="form-control" placeholder="Enter height">
+                </div>
+		<!-- Height to CM Inputs -->
+                <div id="heightFields" class="mb-3" style="display: none;">
+                    <label for="feet" class="form-label">Feet</label>
+                    <input type="number" id="feet" class="form-control" placeholder="Enter feet">
+                    <label for="inches" class="form-label mt-2">Inches</label>
+                    <input type="number" id="inches" class="form-control" placeholder="Enter inches">
+                </div>
+
+                <div class="d-grid gap-2">
+                    <button onclick="calculate()" class="btn btn-success">Calculate</button>
+                    <button onclick="resetFields()" class="btn btn-danger">Reset</button>
+                </div>
+
+                <div class="mt-3">
+                    <label for="result" class="form-label">Result</label>
+                    <textarea id="result" class="form-control" rows="2" readonly></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

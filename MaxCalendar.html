@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Full Calendar</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- jQuery CDN -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+        .calendar-container {
+            margin: auto;
+            
+        }
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .calendar-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .day-cell {
+            width: 14.28%;
+            height: 80px;
+            border: 1px solid #ddd;
+            vertical-align: top;
+            padding: 5px;
+            cursor: pointer;
+            position: relative;
+        }
+        .today {
+            background-color: green !important;
+            
+        }
+        .event-text {
+            position: absolute;
+            bottom: 5px;
+            left: 5px;
+            right: 5px;
+            background-color: #007bff;
+            color: white;
+            padding: 3px;
+            border-radius: 5px;
+            font-size: 12px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container calendar-container">
+        <div class="calendar-header">
+            <button class="btn btn-primary prev" onclick="changeMonth(-1)" id="prev">Previous</button>
+            <h2 id="month-year"></h2>
+            <button class="btn btn-primary" onclick="changeMonth(1)">Next</button>
+        </div>
+        <table class="table table-bordered calendar-table">
+            <thead>
+                <tr>
+                    <th>Sun</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th>
+                </tr>
+            </thead>
+            <tbody id="calendar-body"></tbody>
+        </table>        
+    </div>
+
+    <!-- Event Modal -->
+    <div class="modal" id="eventModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add Event</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="selectedDate">
+                    <label id="selectedDatelbl"></label><br>
+                    <label for="eventReason">Reason:</label>
+                    <input type="text" id="eventReason" class="form-control">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" onclick="saveEvent()">Save</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let currentDate = new Date();
+        let events = JSON.parse(localStorage.getItem("events")) || {}; // Store events
+
+        function renderCalendar() {
+            const monthYear = document.getElementById("month-year");
+            const calendarBody = document.getElementById("calendar-body");
+            calendarBody.innerHTML = "";
+            
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            const today = new Date();
+            
+            monthYear.innerText = new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(currentDate);
+            
+            var clearbtn="<button id='clearbtn' class='btn btn-danger' onclick='clearEvents()'>Clear</button>";
+            if($("#clearbtn").length==0)
+            $(".prev").after(clearbtn);
+            var todaybtn="<button class='btn btn-success' id='todaybtn' onclick='goToToday()'>Today</button>";
+            if($("#todaybtn").length==0)
+            	$(".prev").after(todaybtn);
+              
+              var currentTime="<p id='current-time'></p>";
+                  if($("#current-time").length==0)
+                  $(".prev").after(currentTime);
+            
+            const firstDay = new Date(year, month, 1).getDay();
+            const lastDate = new Date(year, month + 1, 0).getDate();
+            let dayCounter = 1;
+
+            for (let row = 0; row < 6; row++) {
+                const tr = document.createElement("tr");
+                for (let col = 0; col < 7; col++) {
+                    const td = document.createElement("td");
+                    td.classList.add("day-cell");
+
+                    if (row === 0 && col < firstDay) {
+                        td.innerHTML = ""; // Empty cells before the first day
+                    } else if (dayCounter <= lastDate) {
+                        let formattedDate = `${year}-${(month + 1).toString().padStart(2, '0')}-${dayCounter.toString().padStart(2, '0')}`;
+                        td.innerText = dayCounter;
+                        td.setAttribute("data-date", formattedDate);
+                        td.onclick = () => openEventModal(formattedDate);
+
+                        if (year === today.getFullYear() && month === today.getMonth() && dayCounter === today.getDate()) {
+                            td.classList.add("today");
+                        }
+
+                        if (events[formattedDate]) {
+                            let eventDiv = document.createElement("div");
+                            eventDiv.classList.add("event-text");
+                            eventDiv.innerText = events[formattedDate];
+                            td.appendChild(eventDiv);
+                        }
+                        dayCounter++;
+                    }
+                    tr.appendChild(td);
+                }
+                calendarBody.appendChild(tr);
+                if (dayCounter > lastDate) break;
+            }
+        }
+        
+        function changeMonth(step) {
+            currentDate.setMonth(currentDate.getMonth() + step);
+            renderCalendar();
+        }
+        
+        function goToToday() {
+            currentDate = new Date();
+            renderCalendar();
+        }
+        
+        function updateTime() {
+            const now = new Date();
+            document.getElementById("current-time").innerText = now.toLocaleTimeString();
+        }
+
+        function openEventModal(formattedDate) {
+        
+        document.getElementById("selectedDatelbl").innerText  = formattedDate;
+            document.getElementById("selectedDate").value = formattedDate;
+            document.getElementById("eventReason").value = events[formattedDate] || "";
+            new bootstrap.Modal(document.getElementById("eventModal")).show();
+        }
+
+        function saveEvent() {
+            const selectedDate = document.getElementById("selectedDate").value;
+            const reason = document.getElementById("eventReason").value.trim();
+
+            if (reason) {
+                events[selectedDate] = reason;
+            } else {
+                delete events[selectedDate];
+            }
+
+            localStorage.setItem("events", JSON.stringify(events));
+            renderCalendar();
+            bootstrap.Modal.getInstance(document.getElementById("eventModal")).hide();
+        }
+        
+        setInterval(updateTime, 1000);
+        renderCalendar();
+        updateTime();
+         function clearEvents() {
+            if (confirm("Are you sure you want to clear all events?")) {
+                localStorage.removeItem("calendarEvents");
+                events = {};
+                renderCalendar();
+            }
+        }
+
+
+    </script>
+</body>
+</html>

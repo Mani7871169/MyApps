@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generate Arrays Dynamically</title>
+    <style>
+        .array-div {
+            margin: 10px;
+            padding: 10px;
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .array-title {
+            font-weight: bold;
+        }
+        .btn-yes, .btn-no, .btn-calculate {
+            margin: 5px;
+        }
+        .btn-disabled {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <div id="array-container"></div>
+    <button id="btn-calculate" class="btn-calculate">Calculate Sum</button>
+    <button id="btn-reset" class="btn-calculate" onclick="location.reload();">Reset</button>
+<h2>    <span id="sum-result"></span></h2>
+
+    <script>
+        $(document).ready(function() {
+            const startingNumbers = [];
+	
+            function generateArrays() {
+                let arrays = [];
+                
+                // Define the patterns for each array
+                const patterns = [
+                    {start: 1, step: 2},
+                    {start: 2, step: 4},
+                    {start: 4, step: 8},
+                    {start: 8, step: 16},
+                    {start: 16, step: 1}
+                ];
+                
+                // Generate each array based on its pattern
+                patterns.forEach(pattern => {
+                    let array = [];
+                    for (let i = pattern.start; i <= 31; i += pattern.step) 					{
+                    	array.push(i);
+                        if(pattern.start==2)
+                        {
+                        	array.push(i+1);
+                        }
+                        else if(pattern.start==4)
+                        {
+                        	for(let j=i;j<i+3;j++)
+                            {
+                        		array.push(j+1);
+                            }
+                        }
+                        else if(pattern.start==8)
+                        {
+                        	for(let j=i;j<i+7;j++)
+                            {
+                        		array.push(j+1);
+                            }
+                        }
+                    }
+                    arrays.push(array);
+                });
+
+                return arrays;
+            }
+
+            function displayArrays(arrays) {
+                const container = $('#array-container');
+                container.empty(); // Clear any existing content
+
+                arrays.forEach((array, index) => {
+                    const arrayDiv = $('<div></div>').addClass('array-div');
+                    const arrayContent = $('<div></div>').text(array.join(', '));
+                    const btnYes = $('<button></button>').text('Yes').addClass('btn-yes');
+                    const btnNo = $('<button></button>').text('No').addClass('btn-no');
+                    btnYes.click(function() {
+                        startingNumbers.push(array[0]);
+                        btnYes.addClass('btn-disabled').prop('disabled', true);
+                        btnNo.addClass('btn-disabled').prop('disabled', true);
+                    });
+                    btnNo.click(function() {
+                       
+                        btnYes.addClass('btn-disabled').prop('disabled', true);
+                        btnNo.addClass('btn-disabled').prop('disabled', true);
+                    });
+                    arrayDiv.append(arrayContent, btnYes, btnNo);
+                    container.append(arrayDiv);
+                });
+            }
+
+            $('#btn-calculate').click(function() {
+                const sum = startingNumbers.reduce((acc, curr) => acc + curr, 0);
+                $('#sum-result').text('You Thinked Number is: ' + sum);
+const generatedArrays = generateArrays();
+            displayArrays(generatedArrays);
+            });
+
+            const generatedArrays = generateArrays();
+            displayArrays(generatedArrays);
+        });
+    </script>
+</body>
+</html>

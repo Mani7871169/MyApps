@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculator with History and Edit</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        .container {
+            display: flex;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .calculator {
+            flex: 1;
+        }
+        .output {
+            text-align: right;
+            margin-bottom: 10px;
+            padding: 10px;
+            font-size: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            word-wrap: break-word;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+            background-color: yellow;
+        }
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 4px;
+        }
+        .buttons button {
+            padding: 20px;
+            font-size: 18px;
+            border: none;
+            background-color: #f0f0f0;
+            border-radius: 60px;
+            cursor: pointer;
+        }
+        .buttons button:hover {
+            background-color: #ddd;
+        }
+        .buttons button:active {
+            background-color: #ccc;
+        }
+        .history {
+            flex: 0.8;
+            margin-left: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            overflow-y: auto;
+            max-height: 400px;
+            word-wrap: break-word;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+        }
+        .history h3 {
+            margin-top: 0;
+        }
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px;
+            border-bottom: 1px solid #ddd;
+        }
+        .history-item button {
+            margin-left: 10px;
+            padding: 5px 10px;
+            font-size: 14px;
+            cursor: pointer;
+            border: none;
+            background-color: #f0f0f0;
+            border-radius: 3px;
+        }
+        .history-item button:hover {
+            background-color: #ddd;
+        }
+        .container {
+    max-width: 600px;
+    margin: 0 auto;
+    display: block; /* Change from flex to block */
+}
+
+.history {
+    margin-top: 20px; /* Space below the calculator */
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+    overflow-y: auto;
+    max-height: 200px;
+    word-wrap: break-word;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    background-color: #f9f9f9;
+}
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="calculator">
+            <div class="output" id="output">0</div>
+            <div class="buttons">
+                <button onclick="clearEntry()">C</button>
+                <button onclick="clearAll()">AC</button>
+                <button onclick="backspace()">⌫</button>
+                <button onclick="appendToOutput('/')">/</button>
+                <button onclick="appendToOutput('7')">7</button>
+                <button onclick="appendToOutput('8')">8</button>
+                <button onclick="appendToOutput('9')">9</button>
+                <button onclick="appendToOutput('*')">*</button>
+                <button onclick="appendToOutput('4')">4</button>
+                <button onclick="appendToOutput('5')">5</button>
+                <button onclick="appendToOutput('6')">6</button>
+                <button onclick="appendToOutput('-')">-</button>
+                <button onclick="appendToOutput('1')">1</button>
+                <button onclick="appendToOutput('2')">2</button>
+                <button onclick="appendToOutput('3')">3</button>
+                <button onclick="appendToOutput('+')">+</button>
+                <button onclick="appendToOutput('0')">0</button>
+                <button onclick="appendToOutput('00')">00</button>
+                <button onclick="appendToOutput('.')">.</button>
+                <button onclick="calculateResult()">=</button>
+            </div>
+        </div>
+        
+        <div class="history" id="history">
+            <h3>History</h3>
+        </div>
+    </div>
+
+    <script>
+        let currentInput = "";
+        let historyEntries = [];
+
+        function appendToOutput(value) {
+            const operators = ['+', '-', '*', '/'];
+            const lastChar = currentInput.slice(-1);
+
+            if (currentInput === "" && operators.includes(value)) {
+                return; // Ignore operator input
+            }
+
+            if (operators.includes(lastChar) && operators.includes(value)) {
+                currentInput = currentInput.slice(0, -1) + value;
+            } else {
+                currentInput += value; // Append the value
+            }
+
+            document.getElementById("output").innerText = currentInput;
+        }
+
+        function calculateResult() {
+            try {
+                currentInput = currentInput.replace(/[\+\-\*\/]$/, "");
+
+                const result = eval(currentInput);
+                historyEntries.push({ expression: currentInput, result });
+                updateHistory();
+                currentInput = result.toString();
+                document.getElementById("output").innerText = currentInput;
+            } catch (error) {
+                document.getElementById("output").innerText = "Error";
+                currentInput = "";
+            }
+        }
+
+        function updateHistory() {
+            const historyDiv = document.getElementById("history");
+            historyDiv.innerHTML = "<h3>History</h3>";
+            historyEntries.forEach((entry, index) => {
+                const historyItem = document.createElement("div");
+                historyItem.classList.add("history-item");
+                historyItem.innerHTML = `
+                    ${entry.expression} = ${entry.result}
+                    <button onclick="editHistory(${index})">Edit</button>
+                `;
+                historyDiv.appendChild(historyItem);
+            });
+        }
+
+        function editHistory(index) {
+            currentInput = historyEntries[index].expression;
+            document.getElementById("output").innerText = currentInput;
+        }
+
+        function clearEntry() {
+            currentInput = "";
+            document.getElementById("output").innerText = "0";
+        }
+
+        function clearAll() {
+            currentInput = "";
+            historyEntries = [];
+            document.getElementById("output").innerText = "0";
+            updateHistory();
+        }
+
+        function backspace() {
+            currentInput = currentInput.slice(0, -1);
+            if (currentInput === "") {
+                currentInput = "0";
+            }
+            document.getElementById("output").innerText = currentInput;
+        }
+    </script>
+    
+</body>
+</html>

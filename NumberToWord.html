@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Number to Words Converter</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h2>Number to Words Converter</h2>
+    <input type="text" id="numberInput" placeholder="Enter a number">
+    <button id="convertButton">Convert</button>
+    <button id="clearButton">Clear</button>
+    <label id="resultLabel"></label><br>
+    
+    <h2>Words to Number Converter</h2>
+    <input type="text" id="wordInput1" placeholder="Enter number in words">
+    <button id="convertButton1">Convert</button>
+    <button id="clearButton1">Clear</button>
+    <label id="resultLabel1"></label>
+
+    <script>
+        var Service = {
+            Ones: ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"],
+            Teens: ["Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"],
+            Tens: ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"],
+            Thousands: ["", "Thousand", "Million", "Billion", "Trillion"],
+    
+            convertToWords: function(number) {
+                if (number === 0) return "Zero";
+                
+                var words = "";
+                var i = 0;
+                
+                while (number > 0) {
+                    if (number % 1000 !== 0) {
+                        words = this.convertHundreds(number % 1000) + this.Thousands[i] + " " + words;
+                    }
+                    number = Math.floor(number / 1000);
+                    i++;
+                }
+                
+                return words.trim();
+            },
+    
+            convertHundreds: function(number) {
+                var words = "";
+                
+                if (number >= 100) {
+                    words += this.Ones[Math.floor(number / 100)] + " Hundred ";
+                    number %= 100;
+                }
+                
+                if (number >= 10 && number <= 19) {
+                    words += this.Teens[number % 10] + " ";
+                } else {
+                    words += this.Tens[Math.floor(number / 10)] + " ";
+                    words += this.Ones[number % 10] + " ";
+                }
+                
+                return words;
+            }
+        };
+    
+        $(document).ready(function() {
+        $("#convertButton1").click(function() {
+                var words = $("#wordInput1").val().trim();
+                if (words) {
+                    var number = wordToNumber.convert(words);
+                    $("#resultLabel1").text(number);
+                } else {
+                    $("#resultLabel1").text("Please enter valid words.");
+                }
+            });
+            
+            $("#clearButton1").click(function() {
+                $("#wordInput1").val("");
+                $("#resultLabel1").text("");
+            });
+            $("#convertButton").click(function() {
+                var number = parseInt($("#numberInput").val(), 10);
+                if (!isNaN(number)) {
+                    var words = Service.convertToWords(number);
+                    $("#resultLabel").text(words);
+                } else {
+                    $("#resultLabel").text("Please enter a valid number.");
+                }
+            });
+            $("#clearButton").click(function() {
+                $("#numberInput").val('')
+                $("#resultLabel").text('')
+            });
+        });
+    
+        var wordToNumber = {
+            ones: {"one": 1, "two": 2, "three": 3, "four": 4, "five": 5, "six": 6, "seven": 7, "eight": 8, "nine": 9},
+            teens: {"ten": 10, "eleven": 11, "twelve": 12, "thirteen": 13, "fourteen": 14, "fifteen": 15, "sixteen": 16, "seventeen": 17, "eighteen": 18, "nineteen": 19},
+            tens: {"twenty": 20, "thirty": 30, "forty": 40, "fifty": 50, "sixty": 60, "seventy": 70, "eighty": 80, "ninety": 90},
+            multiples: {"hundred": 100, "thousand": 1000, "million": 1000000},
+            
+            convert: function(input) {
+                var words = input.toLowerCase().split(/\s|-/);
+                var total = 0, current = 0;
+                
+                words.forEach(word => {
+                    if (this.ones[word]) {
+                        current += this.ones[word];
+                    } else if (this.teens[word]) {
+                        current += this.teens[word];
+                    } else if (this.tens[word]) {
+                        current += this.tens[word];
+                    } else if (this.multiples[word]) {
+                        if (word === "hundred") {
+                            current *= this.multiples[word];
+                        } else {
+                            total += current * this.multiples[word];
+                            current = 0;
+                        }
+                    }
+                });
+                
+                return total + current;
+            }
+        };
+
+    </script>
+</body>
+</html>
