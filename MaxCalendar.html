@@ -6,7 +6,7 @@
     <title>Full Calendar</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- jQuery CDN -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <style>
         body {
@@ -57,9 +57,6 @@
 </head>
 <body>
     <div class="container calendar-container">
-<a href="index.html">
-    <button class="btn btn-primary">Back</button>
-</a>
         <div class="calendar-header">
             <button class="btn btn-primary prev" onclick="changeMonth(-1)" id="prev">Previous</button>
             <h2 id="month-year"></h2>
@@ -87,7 +84,7 @@
                     <input type="hidden" id="selectedDate">
                     <label id="selectedDatelbl"></label><br>
                     <label for="eventReason">Reason:</label>
-                    <input type="text" id="eventReason" class="form-control">
+                    <input type="text" id="eventReason" class="form-control" style="height: 100px;">
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-primary" onclick="saveEvent()">Save</button>
@@ -149,7 +146,7 @@
                         if (events[formattedDate]) {
                             let eventDiv = document.createElement("div");
                             eventDiv.classList.add("event-text");
-                            eventDiv.innerText = events[formattedDate];
+                            eventDiv.innerText = (events[formattedDate].length>50) ? events[formattedDate].substring(0, 10): events[formattedDate];
                             td.appendChild(eventDiv);
                         }
                         dayCounter++;

@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <title>Jira Tracking</title>
+    <style>
+	.controls{
+	    border: 1px solid cadetblue;
+	    padding: 16px;
+            margin-top: 30px;
+	}
+	.highlight {
+            background-color: lightgreen !important;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 2px;
+            text-align: left;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+		.mandatory::before 
+	{
+    		content: "*";
+    font-weight: bold;
+    color: red; 
+}
+    </style>
+
+    <script>
+const detailsKey = "detailsData"; // Key for storing details data in localStorage
+const summaryKey = "summaryData"; // Key for storing summary data in localStorage
+let editingIndex = -1; // Keeps track of the index of the row being edited
+// Initialize count of week-off days
+let weekOffCount = 0;
+var totOff = 0;
+var totCalDays = 0;
+var totHol = 0;
+
+
+function addRecord() {
+   let date = document.getElementById('date').value;
+   let receivedDate = document.getElementById('receivedDate').value;
+   let jiraNumber = document.getElementById('jiraNumber').value;
+   let project = document.getElementById('project').value;
+   let jiraStatus = document.getElementById('jiraStatus').value;
+   let dayStatus = document.getElementById('dayStatus').value;
+   let hours = parseFloat(document.getElementById('hours').value);
+   let description= document.getElementById('Description').value;
+
+   if ((dayStatus !== 'Holiday' && dayStatus !== 'Leave' && dayStatus !== 'Weekoff') && (!date || !jiraNumber || !hours)) {
+      alert('Date, Jira Number, and Hours are required!');
+      return;
+   }
+   // Update summary data
+   if (dayStatus === 'Holiday' || dayStatus === 'Leave' || dayStatus === 'Weekoff') {
+      jiraNumber = dayStatus;
+      receivedDate = "";
+   }
+
+   // Retrieve data from localStorage
+   const detailsData = JSON.parse(localStorage.getItem(detailsKey)) || [];
+   const summaryData = JSON.parse(localStorage.getItem(summaryKey)) || {};
+
+   // Store in details data
+   const detailRecord = {
+      date,
+      receivedDate,
+      jiraNumber,
+      project,
+      jiraStatus,
+      dayStatus,
+      hours,
+      description
+   };
+
+   // If editing, update the existing record
+   if (editingIndex > -1) {
+      detailsData[editingIndex] = detailRecord;
+      editingIndex = -1; // Reset the editing index
+   } else {
+      detailsData.push(detailRecord);
+   }
+
+   
+
+   if (summaryData[jiraNumber]) {
+      summaryData[jiraNumber].totalHours += hours;
+   } else {
+      summaryData[jiraNumber] = {
+         project,
+         totalHours: hours
+      };
+   }
+
+   // Save updated data back to localStorage
+   localStorage.setItem(detailsKey, JSON.stringify(detailsData));
+   localStorage.setItem(summaryKey, JSON.stringify(summaryData));
+
+   // Refresh tables
+   refreshTables();
+
+   // Clear form fields
+   document.getElementById('dataForm').reset();
+
+   setCurrentDate();
+}
+
+function editRecord(index) {
+   // Retrieve data from localStorage
+   const detailsData = JSON.parse(localStorage.getItem(detailsKey)) || [];
+   const record = detailsData[index];
+
+   // Populate the form with the selected record's data
+   document.getElementById('date').value = record.date;
+   document.getElementById('receivedDate').value = record.receivedDate;
+   document.getElementById('jiraNumber').value = record.jiraNumber;
+   document.getElementById('project').value = record.project;
+   document.getElementById('jiraStatus').value = record.jiraStatus;
+   document.getElementById('dayStatus').value = record.dayStatus;
+   document.getElementById('hours').value = record.hours;
+   document.getElementById('Description').value = record.description;
+
+   // Set editingIndex to mark that we're editing a record
+   editingIndex = index;
+}
+
+function removeRecord(index) {
+   // Retrieve data from localStorage
+   var detailsData = JSON.parse(localStorage.getItem(detailsKey)) || [];
+
+   // Filter out the record at the specified index
+   var filteredData = detailsData.filter(function (item, itemIndex) {
+      return itemIndex !== index;
+   });
+
+   // Update localStorage with the filtered data
+   localStorage.setItem(detailsKey, JSON.stringify(filteredData));
+
+   // Refresh tables to reflect the changes
+   refreshTables();
+}
+
+
+function refreshTables() {
+   // Retrieve data from localStorage
+
+   const detailsData = JSON.parse(localStorage.getItem(detailsKey)) || [];
+   const summaryData = JSON.parse(localStorage.getItem(summaryKey)) || {};
+
+   // Refresh Details Table
+   const detailsTable = document.getElementById('detailsTable').getElementsByTagName('tbody')[0];
+   detailsTable.innerHTML = ''; // Clear the table
+   totHol=0;
+
+   detailsData.forEach((record, index) => {
+      let newRow = detailsTable.insertRow();
+      if (record.dayStatus == 'Holiday' || record.dayStatus == 'Leave') {
+         newRow.style.backgroundColor = "#99cc00";
+         totHol = totHol + 1;
+      };
+     if (record.dayStatus == 'Weekoff') {
+         newRow.style.backgroundColor = "rosybrown";
+      };
+      newRow.innerHTML = `
+		 <td style='width:50px;'>${index+1}</td>
+                <td style='width:90px;'>${record.date}</td>
+                <td style='width:90px;'>${record.receivedDate}</td>
+                <td style='width:90px;'>${record.jiraNumber}</td>
+                <td style='width:90px;'>${record.project}</td>
+                <td style='width:120px;'>${record.jiraStatus}</td>
+                <td style='width:120px;'>${record.dayStatus}</td>
+                <td style='width:80px;'>${record.hours}</td>
+		<td style='width:250px;'>${record.description}</td>
+                <td style='width:130px;'>
+                    <button class="btn btn-warning btn-sm" onclick="editRecord(${index})">Edit</button>
+
+                    <button class="btn btn-warning btn-sm" onclick="removeRecord(${index})">Delete</button>
+                </td>
+
+            `;
+	
+
+   });
+
+   document.getElementById('holDays').textContent = "Total Holidays and Leave Day(s): " + totHol;
+   // Refresh Summary Table
+   const summaryTable = document.getElementById('summaryTable').getElementsByTagName('tbody')[0];
+   summaryTable.innerHTML = ''; // Clear the table
+
+   var slNo = 0;
+   var subTotal=0;
+   Object.keys(summaryData).forEach((jiraNumber) => {
+      if (jiraNumber !== 'Holiday' && jiraNumber !== 'Leave' ) {
+         let totalHours = 0; // Initialize totalHours for each Jira number
+         detailsData.forEach(record => {
+            if (record.jiraNumber === jiraNumber) {
+               totalHours += record.hours;
+            }
+         });
+         const {
+            project
+         } = summaryData[jiraNumber];
+         const newRow = summaryTable.insertRow();
+	 console.log(jiraNumber +":"+ totalHours);
+	 if(jiraNumber!=='Weekoff' && totalHours>0)
+	{
+         newRow.innerHTML = `
+                <td>${slNo+1}</td>
+                <td>${jiraNumber}</td>
+                <td>${project}</td>
+                <td>${totalHours.toFixed(2)}</td>
+            `;
+	subTotal=subTotal+totalHours;
+         slNo = slNo + 1;
+	}
+      }
+   });
+  document.getElementById('subtotal').textContent = subTotal;
+
+}
+
+// Initialize tables on page load
+window.onload = function () {
+   setCurrentDate();
+   refreshTables();
+   const today = new Date();
+   totOff = getPreviousMonthWeekOffDays(today, 'WO');
+   totCalDays = getPreviousMonthWeekOffDays(today, 'CD');
+   //alert(totOff);
+   document.getElementById('offDays').textContent = "Total Off Day(s): " + totOff;
+   document.getElementById('calDays').textContent = "Total Calendar Day(s): " + totCalDays;
+   document.getElementById('balDays').textContent = "Total Working Day(s): " + (totCalDays - totOff - totHol) + " Total Working Hour(s): " + (totCalDays - totOff - totHol) * 8;
+
+};
+
+function clearRecord() {
+   // Clear the localStorage data
+   localStorage.removeItem(detailsKey);
+   localStorage.removeItem(summaryKey);
+
+   // Refresh tables to reflect the cleared data
+   refreshTables();
+
+   // Clear form fields
+   document.getElementById('dataForm').reset();
+
+   setCurrentDate();
+}
+
+function setCurrentDate() {
+   const today = new Date().toISOString().split('T')[0]; // Get current date in YYYY-MM-DD format
+   document.getElementById('date').value = today;
+   document.getElementById('receivedDate').value = today;
+}
+
+function reset() {
+   document.getElementById('dataForm').reset();
+   setCurrentDate();
+}
+
+function getPreviousMonthWeekOffDays(currentDate, IsFor) {
+   // Get the previous month
+   const localcurrentDate = new Date(currentDate).getDate();
+   let previousMonth;
+   if (localcurrentDate < 5)
+      previousMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
+   else
+      previousMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+
+   //alert(previousMonth);
+
+
+   // Get the number of days in the previous month
+   const lastDayOfPreviousMonth = new Date(previousMonth.getFullYear(), previousMonth.getMonth() + 1, 0).getDate();
+   //alert(lastDayOfPreviousMonth);
+   // Define week-off days (e.g., Saturday and Sunday)
+   const weekOffDays = [6, 0]; // 6: Saturday, 0: Sunday
+
+
+   if (IsFor == 'WO') {
+      // Iterate through each day of the previous month
+      for (let day = 1; day <= lastDayOfPreviousMonth; day++) {
+         const date = new Date(previousMonth.getFullYear(), previousMonth.getMonth(), day);
+         const dayOfWeek = date.getDay();
+
+         // Check if the day is a week-off day
+         if (weekOffDays.includes(dayOfWeek)) {
+            weekOffCount++;
+         }
+      }
+   } else if (IsFor == 'CD') {
+      var startDate = new Date(previousMonth).getDate();
+
+      weekOffCount = lastDayOfPreviousMonth + 1 - startDate;
+   }
+
+   return weekOffCount;
+}
+
+</script>
+
+</head>
+<body>
+   <div class="container">
+      <form id="dataForm" class="controls">
+         <div class="row">
+            <div class="col-md-6">
+               <label for="date" class="mandatory">Date:</label>
+               <input type="date" class="form-control" id="date" required>
+            </div>
+            <div class="col-md-6">
+               <label for="receivedDate">Received Date:</label>
+               <input type="date" class="form-control" id="receivedDate">
+            </div>
+         </div>
+         <div class="row">
+            <div class="col-md-6">
+               <label for="jiraNumber"  class="mandatory">Jira Number:</label>
+               <input type="text" class="form-control" id="jiraNumber" required>
+            </div>
+            <div class="col-md-6">
+               <label for="project">Project(s):</label>
+               <select name="project" id="project" class="form-control">
+                  <option value="CAMS">CAMS</option>
+                  <option value="UW">UW</option>
+                  <option value="McKee">McKee</option>
+               </select>
+            </div>
+         </div>
+         <div class="row">
+            <div class="col-md-6">
+               <label for="jiraStatus">Jira Status:</label>
+               <select name="jiraStatus" id="jiraStatus" class="form-control">
+                  <option value="In Progress">In Progress</option>
+                  <option value="UAT">In UAT</option>
+                  <option value="In QA">In QA</option>
+                  <option value="In Development">In Development</option>
+                  <option value="Closed">Closed</option>
+                  <option value="Ready For UAT">Ready For UAT</option>
+               </select>
+            </div>
+            <div class="col-md-6">
+               <label for="dayStatus">Day Status:</label>
+               <select name="dayStatus" id="dayStatus" class="form-control">
+                  <option value="In Progress">In Progress</option>
+                  <option value="Completed">Completed</option>
+                  <option value="Holiday">Holiday</option>
+                  <option value="Leave">Leave</option>
+                  <option value="Weekoff">Weekoff</option>
+               </select>
+            </div>
+         </div>
+         <div class="row">
+            <div class="col-md-6 form-group">
+               <label for="hours"  class="mandatory">Hours:</label>
+               <input type="number" class="form-control" id="hours" step="0.1" required value="8">
+            </div>
+	    <div class="col-md-6">
+               <label for="Description">Description:</label>
+               <input type="text" class="form-control" id="Description">
+            </div>
+         </div>
+	 <div class="row form-group">
+      <div class="col-md-6">
+         <label for="startTime">Start Time:</label>
+         <input type="time" class="form-control" id="startTime">
+      </div>
+      <div class="col-md-6">
+         <label for="endTime">End Time:</label>
+         <input type="time" class="form-control" id="endTime">
+      </div>
+   </div>
+         <div class="row form-group">
+            <div class="col-md-4">
+               <button type="button" class="btn btn-primary" onclick="addRecord()" id="saveBtn">Save</button> 
+               <button type="button" class="btn btn-primary" onclick="reset()" id="resetBtn">Reset</button> 
+               <button type="button" class="btn btn-primary" onclick="clearRecord()" id="clearBtn">Clear Local Storage</button> 
+            </div>
+            <div class="col-md-8" style="background-color:bisque;display:flex">
+		<p id="calDays"></p>
+		<p id="holDays"></p>
+		<p id="offDays"></p>
+		<p id="balDays"></p>
+            </div>
+         </div>
+      </form>
+<br/>
+      <table id="summaryTable">
+         <thead>
+            <tr>
+               <th>Sl.No</th>
+               <th>Jira Number</th>
+               <th>Project</th>
+               <th>Total Hours</th>
+            </tr>
+         </thead>
+         <tbody></tbody>
+
+	<tfooter>
+	<tr>
+	<td colspan="3" style="background-color:#f4f4f4;font-weight:bold;text-align:right">Sub Total</td>
+	<td style="background-color:#f4f4f4;font-weight:bold;"><p id="subtotal"></p>
+	</td></tr></tfooter>
+      </table>
+<br/>
+      <table id="detailsTable">
+         <thead>
+            <tr>
+               <th>Sl.No</th>
+               <th>Date</th>
+               <th>Received Date</th>
+               <th>Jira Number</th>
+               <th>Project</th>
+               <th>Jira Status</th>
+               <th>Day Status</th>
+               <th>Hours</th>
+	       <th>Description</th>
+               <th>Actions</th>
+            </tr>
+         </thead>
+         <tbody></tbody>
+
+	
+
+      </table>
+   </div>
+   <!-- Bootstrap JS and dependencies -->
+   <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script>
+	$(document).ready(function () {
+            highlightAndSortTable(); // Run on page load
+
+            $("#saveBtn").click(function () {
+                highlightAndSortTable(); // Run again when Save button is clicked
+            });
+        });
+
+	function highlightAndSortTable() {
+
+            let dateHoursMap = {};
+
+            // Calculate total hours per date
+            $("#detailsTable tbody tr").each(function () {
+                let date = $(this).find("td:eq(1)").text().trim();
+                let hours = parseInt($(this).find("td:eq(7)").text(), 10);
+
+                if (!dateHoursMap[date]) {
+                    dateHoursMap[date] = 0;
+                }
+                dateHoursMap[date] += hours;
+            });
+
+            // Highlight rows where total hours != 8
+            $("#detailsTable tbody tr").each(function () {
+                let date = $(this).find("td:eq(1)").text().trim();
+
+                if (dateHoursMap[date] !== 8) {
+                    $(this).addClass("highlight");
+                }
+            });
+
+	   let rows = $("#detailsTable tbody tr").toArray();
+            rows.sort(function (a, b) {
+                let dateA = new Date($(a).find("td:eq(1)").text().trim());
+                let dateB = new Date($(b).find("td:eq(1)").text().trim());
+                return dateA - dateB;
+            });
+	   
+	    $("#detailsTable tbody").empty().append(rows);
+        };
+
+      $('#date').on('change', function () {
+         var selectedDate = new Date($(this).val());
+         var dayOfWeek = selectedDate.getDay(); // 0 for Sunday, 6 for Saturday
+         if (dayOfWeek === 0 || dayOfWeek === 6) {
+            $('#dayStatus').val('Weekoff');
+         } else {
+            $('#dayStatus').val('In Progress'); // Reset to default or any other value
+         }
+      });
+
+    </script>
+
+</body>
+</html>
