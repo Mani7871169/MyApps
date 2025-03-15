@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Weight to Amount Calculator</title>
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet" />
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+</head>
+<body>
+
+<div class="container mt-5">
+  <div class="card p-4">
+    <h3 class="mb-4">Weight to Amount Calculator</h3>
+
+    <div class="form-group">
+      <label for="sellingWeight">Selling Weight:</label>
+      <input type="number" id="sellingWeight" class="form-control" placeholder="Enter selling weight" />
+    </div>
+
+    <div class="form-group">
+      <label for="sellingRate">Selling Rate:</label>
+      <input type="number" id="sellingRate" class="form-control" placeholder="Enter selling rate" />
+    </div>
+
+    <div class="form-group">
+      <label for="buyingWeight">Buying Weight:</label>
+      <input type="number" id="buyingWeight" class="form-control" placeholder="Enter buying weight" />
+    </div>
+
+   
+
+    <button id="calculate" class="btn btn-primary">Calculate</button>
+
+    <div class="mt-4">
+      <h5>Result:</h5>
+      <ul class="list-group">
+        <li class="list-group-item">Selling Weight: <span id="resultSellingWeight">-</span></li>
+        <li class="list-group-item">Selling Price: ₹<span id="resultSellingPrice">0.00</span></li>
+        <li class="list-group-item">Buying Weight: <span id="resultBuyingWeight">-</span></li>
+        <li class="list-group-item">Rate: ₹<span id="resultRate">0.00</span></li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<script>
+  $(document).ready(function () {
+    $('#calculate').click(function () {
+      let sellingWeight = parseFloat($('#sellingWeight').val()) || 0;
+      let sellingRate = parseFloat($('#sellingRate').val()) || 0;
+      let buyingWeight = parseFloat($('#buyingWeight').val()) || 0;
+      let unit = $('input[name="unit"]:checked').val();
+      let total = 0;
+
+      // Convert grams to kg if needed
+      if (unit === 'gram') {
+        sellingWeight /= 1000;
+        buyingWeight /= 1000;
+      }
+
+      if (sellingWeight > 0) {
+        total = sellingRate * (buyingWeight / sellingWeight);
+      }
+
+      // Display Results
+      $('#resultSellingWeight').text(`${sellingWeight.toFixed(2)} ${unit}`);
+      $('#resultSellingPrice').text(sellingRate.toFixed(2));
+      $('#resultBuyingWeight').text(`${buyingWeight.toFixed(2)} ${unit}`);
+      $('#resultRate').text(total.toFixed(2));
+    });
+  });
+</script>
+
+</body>
+</html>

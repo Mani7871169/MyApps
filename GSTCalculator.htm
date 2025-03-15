@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GST Calculator with Multiple Records</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f9;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .container {
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      width: 350px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    h2 {
+      text-align: center;
+      color: #333;
+    }
+    input, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    button {
+      background-color: #28a745;
+      color: #fff;
+      cursor: pointer;
+      border: none;
+      font-size: 16px;
+      transition: background 0.3s ease;
+    }
+    button:hover {
+      background-color: #218838;
+    }
+    .result, .amount-list {
+      margin-top: 20px;
+      padding: 10px;
+      background-color: #f9f9f9;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 16px;
+      color: #333;
+    }
+    .amount-list div {
+      margin-bottom: 5px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .remove-btn {
+      background-color: #dc3545;
+      color: #fff;
+      border: none;
+      padding: 4px 8px;
+      cursor: pointer;
+      border-radius: 4px;
+      font-size: 14px;
+      width:80px;
+    }
+    .remove-btn:hover {
+      background-color: #c82333;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h2>GST Calculator</h2>
+  
+  <!-- Add Amounts One by One -->
+  <input type="number" id="amount" placeholder="Enter Amount" />
+  <button onclick="addAmount()">Add Amount</button>
+  
+  <!-- List of Added Amounts -->
+  <div class="amount-list" id="amountList"></div>
+  
+  <!-- Enter GST After Adding All Amounts -->
+  <input type="number" id="gst" placeholder="Enter GST (%)" />
+  <button onclick="calculateTotal()">Calculate Total</button>
+  
+  <!-- Display Result -->
+  <div class="result" id="result"></div>
+</div>
+
+<script>
+  let amounts = [];
+
+  // Add amount to the list
+  function addAmount() {
+    const amount = parseFloat(document.getElementById('amount').value);
+
+    if (isNaN(amount) || amount <= 0) {
+      alert('Please enter a valid amount');
+      return;
+    }
+
+    amounts.push(amount);
+    document.getElementById('amount').value = '';
+    updateAmountList();
+  }
+
+  // Remove an amount from the list
+  function removeAmount(index) {
+    amounts.splice(index, 1);
+    updateAmountList();
+  }
+
+  // Update displayed list of amounts
+  function updateAmountList() {
+    const list = document.getElementById('amountList');
+    list.innerHTML = '';
+    amounts.forEach((amount, index) => {
+      list.innerHTML += `
+        <div>
+          ₹${amount.toFixed(2)} 
+          <button class="remove-btn" onclick="removeAmount(${index})">Remove</button>
+        </div>
+      `;
+    });
+  }
+
+  // Calculate total GST, CGST, and SGST based on entered GST rate
+  function calculateTotal() {
+    if (amounts.length === 0) {
+      alert('Please add at least one amount');
+      return;
+    }
+
+    const gstRate = parseFloat(document.getElementById('gst').value);
+
+    if (isNaN(gstRate) || gstRate <= 0) {
+      alert('Please enter a valid GST rate');
+      return;
+    }
+
+    let totalAmount = amounts.reduce((sum, amount) => sum + amount, 0);
+    let totalGST = (totalAmount * gstRate) / 100;
+    let totalCGST = totalGST;
+    let totalSGST = totalGST;
+    let totalWithGST = totalAmount + totalGST+totalSGST;
+
+    document.getElementById('result').innerHTML = `
+      Base Total: ₹${totalAmount.toFixed(2)} <br>
+      Total GST (${gstRate}%): ₹${totalGST.toFixed(2)} <br>
+      ➔ CGST: ₹${totalCGST.toFixed(2)} <br>
+      ➔ SGST: ₹${totalSGST.toFixed(2)} <br>
+      <strong>Total Amount (including GST): ₹${totalWithGST.toFixed(2)}</strong>
+    `;
+  }
+</script>
+
+</body>
+</html>
