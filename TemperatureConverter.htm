@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Temperature Converter</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="card p-4">
+            <h2 class="text-center">Temperature Converter</h2>
+            <div class="mb-3">
+                <label for="temperature" class="form-label">Enter Temperature:</label>
+                <input type="number" class="form-control" id="temperature" placeholder="Enter value">
+            </div>
+            <div class="d-flex justify-content-between">
+                <button class="btn btn-primary w-50 me-2" id="convertCtoF">Celsius to Fahrenheit</button>
+                <button class="btn btn-secondary w-50 ms-2" id="convertFtoC">Fahrenheit to Celsius</button>
+            </div>
+            <h4 class="text-center mt-3" id="resultCtoF"></h4>
+            <h4 class="text-center mt-2" id="resultFtoC"></h4>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function(){
+            $('#convertCtoF').click(function(){
+                let temp = parseFloat($('#temperature').val());
+                if(isNaN(temp)) {
+                    $('#resultCtoF').text('Please enter a valid number');
+                    $('#resultFtoC').text('');
+                } else {
+                    $('#resultCtoF').text(`${temp}°C = ${(temp * 9/5 + 32).toFixed(2)}°F`);
+                    $('#resultFtoC').text(`${(temp * 9/5 + 32).toFixed(2)}°F = ${temp}°C`);
+                }
+            });
+
+            $('#convertFtoC').click(function(){
+                let temp = parseFloat($('#temperature').val());
+                if(isNaN(temp)) {
+                    $('#resultFtoC').text('Please enter a valid number');
+                    $('#resultCtoF').text('');
+                } else {
+                    $('#resultFtoC').text(`${temp}°F = ${((temp - 32) * 5/9).toFixed(2)}°C`);
+                    $('#resultCtoF').text(`${((temp - 32) * 5/9).toFixed(2)}°C = ${temp}°F`);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
