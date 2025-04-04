@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interest Rate Calculator</title>
+    <script>
+        function calculateInterest() {
+            let monthlyRate = parseFloat(document.getElementById("monthlyRate").value);
+            let yearlyRate = parseFloat(document.getElementById("yearlyRate").value);
+            
+            if (!isNaN(monthlyRate)) {
+                yearlyRate = (monthlyRate * 12).toFixed(2);
+                document.getElementById("yearlyRate").value = yearlyRate;
+            } else if (!isNaN(yearlyRate)) {
+                monthlyRate = (yearlyRate / 12).toFixed(2);
+                document.getElementById("monthlyRate").value = monthlyRate;
+            }
+            
+            displayExamples(monthlyRate);
+        }
+        
+        function clearFields() {
+            document.getElementById("monthlyRate").value = "";
+            document.getElementById("yearlyRate").value = "";
+            document.getElementById("examples").innerHTML = "";
+            document.getElementById("customAmount").value = "";
+            document.getElementById("customInterest").innerHTML = "";
+        }
+        
+        function displayExamples(monthlyRate) {
+            if (isNaN(monthlyRate)) return;
+            let amount = 100;
+            let interest = (amount * (monthlyRate / 100)).toFixed(2);
+            let examplesHTML = `<p>For ₹${amount}, monthly interest: ₹${interest}</p>`;
+            
+            amount = 500;
+            interest = (amount * (monthlyRate / 100)).toFixed(2);
+            examplesHTML += `<p>For ₹${amount}, monthly interest: ₹${interest}</p>`;
+            
+            amount = 1000;
+            interest = (amount * (monthlyRate / 100)).toFixed(2);
+            examplesHTML += `<p>For ₹${amount}, monthly interest: ₹${interest}</p>`;
+            
+            document.getElementById("examples").innerHTML = examplesHTML;
+        }
+        
+        function calculateCustomInterest() {
+            let monthlyRate = parseFloat(document.getElementById("monthlyRate").value);
+            let amount = parseFloat(document.getElementById("customAmount").value);
+            if (!isNaN(monthlyRate) && !isNaN(amount)) {
+                let interest = (amount * (monthlyRate / 100)).toFixed(2);
+                document.getElementById("customInterest").innerHTML = `For ₹${amount}, monthly interest: ₹${interest}`;
+            }
+        }
+    </script>
+</head>
+<body>
+    <h2>Interest Rate Calculator</h2>
+    <label for="monthlyRate">Monthly Interest Rate (%):</label>
+    <input type="number" id="monthlyRate"> <br><br>
+    
+    <label for="yearlyRate">Yearly Interest Rate (%):</label>
+    <input type="number" id="yearlyRate"> <br><br>
+    
+    <button onclick="calculateInterest()">Calculate</button>
+    <button onclick="clearFields()">Clear</button>
+    
+    <h3>Examples:</h3>
+    <div id="examples"></div>
+    
+    <h3>Custom Calculation:</h3>
+    <label for="customAmount">Enter Amount (₹):</label>
+    <input type="number" id="customAmount">
+    <button onclick="calculateCustomInterest()">Calculate Interest</button>
+    <p id="customInterest"></p>
+</body>
+</html>
