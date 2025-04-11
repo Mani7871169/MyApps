@@ -6,81 +6,227 @@
   <title>EMI Calculator</title>
   <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet" />
   <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/linways/table-to-excel@v1.0.4/dist/tableToExcel.js"></script>
 </head>
 <body>
+<style>
+	.controls{
+	    border: 1px solid cadetblue;
+	    padding: 20px;
+            margin-top: 30px;
+	}
+	</style>
+<div class="">
+  <div style="padding:10px">
+  <form class="controls">
+    <h3 class="mb-2" style="text-align:center">EMI Calculator</h3>
 
-<div class="container mt-5">
-  <div class="card p-4">
-    <h3 class="mb-4">EMI Calculator</h3>
-
-    <div class="form-group">
+    <div class="row form-group">
+	<div class="col-md-4">
       <label for="loanAmount">Loan Amount (₹):</label>
+	  </div>
+	  <div class="col-md-4">
       <input type="number" id="loanAmount" class="form-control" placeholder="Enter loan amount" />
     </div>
-
-    <div class="form-group">
+	</div>
+<div class="row form-group">
+	<div class="col-md-4">
       <label for="interestRate">Annual Interest Rate (%):</label>
+	  </div>
+	  <div class="col-md-4">
       <input type="number" id="interestRate" class="form-control" placeholder="Enter interest rate" />
     </div>
-
-    <div class="form-group">
+	</div>
+	<div class="row form-group">
+	<div class="col-md-4">
       <label for="loanTenure">Loan Tenure (Months):</label>
+	  </div>
+	  <div class="col-md-4">
       <input type="number" id="loanTenure" class="form-control" placeholder="Enter loan tenure in months" />
     </div>
-
+	</div>
+    
+<div class="form-group">
     <button id="calculate" class="btn btn-primary">Calculate</button>
+	
 
-    <div class="mt-4">
+</div>
+    <div class="mt-1">
       <h5>Result:</h5>
       <ul class="list-group">
-        <li class="list-group-item">Loan Amount: ₹<span id="resultLoanAmount">0.00</span></li>
-        <li class="list-group-item">Interest Rate: <span id="resultInterestRate">0.00</span>%</li>
-        <li class="list-group-item">Loan Tenure: <span id="resultLoanTenure">0</span> months</li>
-        <li class="list-group-item">Monthly EMI: ₹<span id="resultEMI">0.00</span></li>
+        <li class="list-group-item" style="padding:4px">Loan Amount: ₹<span id="resultLoanAmount">0.00</span></li>
+		<li class="list-group-item text-success" style="padding:4px"><b>Total Interest in radeducing: ₹<span id="totInterest">0.00</span></b></li>
+		<li class="list-group-item text-success" style="padding:4px"><b>Total Interest in Flat: ₹<span id="totInterestFlat">0.00</span></b></li>
+        <li class="list-group-item" style="padding:4px">Interest Rate / Yr: <span id="resultInterestRate">0.00</span>%</li>
+		<li class="list-group-item" style="padding:4px">Interest Rate / Mon: <span id="resultInterestRateMon">0.00</span>%</li>
+        <li class="list-group-item" style="padding:4px">Loan Tenure: <span id="resultLoanTenure">0</span> months</li>
+        <li class="list-group-item" style="padding:4px">Monthly EMI: ₹<span id="resultEMI">0.00</span></li>
       </ul>
     </div>
-
+<!-- </form> -->
+<!-- </form> -->
     <!-- Month-wise Table -->
-    <div class="mt-4">
-      <h5>Month-wise Breakdown:</h5>
+    <div class="mt-2">
+	<div class="col-md-4">
+	  <button id="export" type="button" class="btn btn-success">Export to Excel</button></div>
+	  </div>
+	<div class="row form-group">
+	<div class="col-md-12">
+      <h5>Reducing Balance(Interest is calculated only on the outstanding loan amount, which reduces every month as you repay the principal):</h5>
+	  </div>
       <div class="table-responsive">
-        <table class="table table-bordered table-striped">
+        <table class="table table-bordered table-striped" id="emiTableBody">
           <thead>
             <tr>
-              <th>Month</th>
-              <th>Beginning Balance (₹)</th>
+              <th>Sl.No</th>
+			  <th>Month</th>
+              <th>Starting (₹)</th>
               <th>EMI (₹)</th>
-              <th>Principal Component (₹)</th>
-              <th>Interest Component (₹)</th>
-              <th>Ending Balance (₹)</th>
+              <th>Principal (₹)</th>
+              <th>Interest (₹)</th>
+              <th>Balance (₹)</th>
             </tr>
           </thead>
           <tbody id="emiTableBody">
             <!-- Rows will be added dynamically -->
           </tbody>
+		  <tfoot>
+			<tr>
+			  <th colspan="4" class="text-right">Total</th>
+			  <th id="totalPrincipal">0.00</th>
+			  <th id="totalInterest">0.00</th>
+			  <th id="totalPayment">0.00</th>
+			</tr>
+		  </tfoot>
         </table>
       </div>
     </div>
+	<!-- Flat Interest Table -->
+<div class="mt-2">
+  <h5>Flat Interest Calculation(Interest is calculated on the entire loan amount for the entire duration):</h5>
+  <div class="table-responsive">
+    <table class="table table-bordered table-striped" id="flatEmiTableBody">
+      <thead>
+        <tr>
+		<th>Sl.No</th>
+          <th>Month</th>
+          <th>Starting (₹)</th>
+          <th>EMI (₹)</th>
+          <th>Principal (₹)</th>
+          <th>Interest (₹)</th>
+          <th>Balance (₹)</th>
+        </tr>
+      </thead>
+      <tbody id="flatTableBody">
+        <!-- Flat rows will be added dynamically -->
+      </tbody>
+      <tfoot>
+        <tr>
+          <th colspan="4" class="text-right">Total</th>
+          <th id="flatTotalPrincipal">0.00</th>
+          <th id="flatTotalInterest">0.00</th>
+          <th id="flatTotalPayment">0.00</th>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+</div>
+<table id="combinedTable" style="display: none;">
+  <thead>
+    <tr><th colspan="6">EMI Breakdown</th></tr>
+  </thead>
+  <tbody id="combinedTableBody">
+  </tbody>
+</table>
   </div>
 </div>
 
 <script>
   $(document).ready(function () {
+  // Export button click event listener
+    <!-- $("#export").click(function() { -->
+        <!-- if ($("table tbody tr").length > 0) { -->
+            <!-- const table = document.getElementsByTagName("table")[0]; -->
+            <!-- const currentDate = new Date(); -->
+			<!-- const fileName = `Statement_${currentDate.getDate()}_${currentDate.getMonth() + 1}_${currentDate.getFullYear()}.xlsx`; -->
+            <!-- TableToExcel.convert(table, { -->
+                <!-- name: fileName, -->
+                <!-- sheet: { -->
+                    <!-- name: `Budget_${currentDate.getDate()}_${currentDate.getMonth() + 1}_${currentDate.getFullYear()}` -->
+                <!-- } -->
+            <!-- }); -->
+        <!-- } else { -->
+            <!-- alert("No records to export."); -->
+        <!-- } -->
+    <!-- }); -->
+	
+	<!-- $("#export").click(function () { -->
+  <!-- const tables = document.querySelectorAll("table"); -->
+  <!-- const currentDate = new Date(); -->
+
+  <!-- tables.forEach((table, index) => { -->
+    <!-- const fileName = `Sheet_${index + 1}_${currentDate.getDate()}_${currentDate.getMonth() + 1}_${currentDate.getFullYear()}.xlsx`; -->
+    <!-- const sheetName = `Sheet${index + 1}`; -->
+    
+    <!-- TableToExcel.convert(table, { -->
+      <!-- name: fileName, -->
+      <!-- sheet: { name: sheetName } -->
+    <!-- }); -->
+  <!-- }); -->
+<!-- }); -->
+
+$("#export").click(function () {
+  // Clear combined table body
+  $("#combinedTableBody").empty();
+
+  // Clone EMI table rows
+  const emiRows = $("#emiTableBody").clone();
+  $("#combinedTableBody").append('<tr><th>Sl.No</th><th>Month</th><th>Beg. Balance</th><th>EMI</th><th>Principal</th><th>Interest</th><th>End Balance</th></tr>');
+  $("#combinedTableBody").append(emiRows.html());
+
+  // Add a gap row and a heading row
+  $("#combinedTableBody").append('<tr><td colspan="6" style="font-weight:bold; background:#f0f0f0;"></td></tr>');
+  $("#combinedTableBody").append('<tr><th colspan="6">Flat Interest Breakdown</th></tr>');
+  
+
+  // Clone Flat EMI table rows (assuming it's in #flatEmiTableBody)
+  const flatRows = $("#flatEmiTableBody").clone();
+  $("#combinedTableBody").append(flatRows.html());
+
+  // Now export the combined table
+  const table = document.getElementById("combinedTable");
+  const currentDate = new Date();
+  const fileName = `Loan_Statement_${currentDate.getDate()}_${currentDate.getMonth() + 1}_${currentDate.getFullYear()}.xlsx`;
+
+  TableToExcel.convert(table, {
+    name: fileName,
+    sheet: {
+      name: "Loan Statement"
+    }
+  });
+});
+
+
     $('#calculate').click(function () {
+	  let dueDate = new Date(); // Start from today
+		
       let loanAmount = parseFloat($('#loanAmount').val()) || 0;
       let interestRate = parseFloat($('#interestRate').val()) || 0;
+	  let interestRatePerMon = parseFloat(interestRate/12);
       let loanTenure = parseInt($('#loanTenure').val()) || 0;
       let monthlyEMI = 0;
       let tableContent = "";
-
+	  let totalInterest=0.0;
+	  let totalPrincipal = 0.0;
       if (loanAmount > 0 && interestRate > 0 && loanTenure > 0) {
         let monthlyInterestRate = (interestRate / 100) / 12;
         monthlyEMI = (loanAmount * monthlyInterestRate * Math.pow(1 + monthlyInterestRate, loanTenure)) /
                      (Math.pow(1 + monthlyInterestRate, loanTenure) - 1);
 
         let balance = loanAmount;
-
+		
         for (let month = 1; month <= loanTenure; month++) {
+		  let formattedDate = `${String(dueDate.getDate()).padStart(2, '0')}-${String(dueDate.getMonth() + 1).padStart(2, '0')}-${dueDate.getFullYear()}`;
           let interestComponent = balance * monthlyInterestRate;
           let principalComponent = monthlyEMI - interestComponent;
           let endingBalance = balance - principalComponent;
@@ -88,28 +234,81 @@
           tableContent += `
             <tr>
               <td>${month}</td>
-              <td>${balance.toFixed(2)}</td>
-              <td>${monthlyEMI.toFixed(2)}</td>
-              <td>${principalComponent.toFixed(2)}</td>
-              <td>${interestComponent.toFixed(2)}</td>
-              <td>${endingBalance.toFixed(2)}</td>
+			  <td>${formattedDate} </td>
+              <td>${balance.toFixed(0)}</td>
+              <td>${monthlyEMI.toFixed(0)}</td>
+              <td>${principalComponent.toFixed(0)}</td>
+              <td>${interestComponent.toFixed(0)}</td>
+              <td>${endingBalance.toFixed(0)}</td>
             </tr>
           `;
-
+		  totalInterest += interestComponent;
+		  totalPrincipal += principalComponent;
           balance = endingBalance;
+		  dueDate.setMonth(dueDate.getMonth() + 1);
         }
       }
 
       // Display Results
-      $('#resultLoanAmount').text(loanAmount.toFixed(2));
-      $('#resultInterestRate').text(interestRate.toFixed(2));
+      $('#resultLoanAmount').text(loanAmount.toFixed(0));
+	  $('#totInterest').text(totalInterest.toFixed(0));
+      $('#resultInterestRate').text(interestRate.toFixed(0));
+	  $('#resultInterestRateMon').text(interestRatePerMon.toFixed(0));
       $('#resultLoanTenure').text(loanTenure);
-      $('#resultEMI').text(monthlyEMI.toFixed(2));
+      $('#resultEMI').text(monthlyEMI.toFixed(0));
+	  
+	  $('#totalPrincipal').text(totalPrincipal.toFixed(0));
+	  $('#totalInterest').text(totalInterest.toFixed(0));
+	  $('#totalPayment').text((totalPrincipal + totalInterest).toFixed(0));
 
       // Display Month-wise Breakdown
       $('#emiTableBody').html(tableContent);
+	  
+	  
+	  // FLAT Interest Calculation
+	let flatInterest = loanAmount * (interestRate / 100) * (loanTenure / 12);
+	let flatTotalPayable = loanAmount + flatInterest;
+	let flatMonthlyEMI = flatTotalPayable / loanTenure;
+	let flatMonthlyInterest = flatInterest / loanTenure;
+	let flatMonthlyPrincipal = loanAmount / loanTenure;
+
+	let flatTableContent = "";
+	let flatBalance = loanAmount;
+	let flatTotalPrincipal = 0.0;
+	let flatTotalInterest = 0.0;
+
+	for (let month = 1; month <= loanTenure; month++) {
+	  let flatEndingBalance = flatBalance - flatMonthlyPrincipal;
+	  let formattedDate = `${String(dueDate.getDate()).padStart(2, '0')}-${String(dueDate.getMonth() + 1).padStart(2, '0')}-${dueDate.getFullYear()}`;
+	  flatTableContent += `
+		<tr>
+		  <td>${month}</td>
+		  <td>${formattedDate} </td>
+		  <td>${flatBalance.toFixed(0)}</td>
+		  <td>${flatMonthlyEMI.toFixed(0)}</td>
+		  <td>${flatMonthlyPrincipal.toFixed(0)}</td>
+		  <td>${flatMonthlyInterest.toFixed(0)}</td>
+		  <td>${flatEndingBalance.toFixed(0)}</td>
+		</tr>
+	  `;
+
+	  flatBalance = flatEndingBalance;
+	  flatTotalPrincipal += flatMonthlyPrincipal;
+	  flatTotalInterest += flatMonthlyInterest;
+	  dueDate.setMonth(dueDate.getMonth() + 1);
+	}
+
+	// Display Flat Interest Table
+	$('#flatTableBody').html(flatTableContent);
+	$('#flatTotalPrincipal').text(flatTotalPrincipal.toFixed(0));
+	$('#flatTotalInterest').text(flatTotalInterest.toFixed(0));
+	$('#totInterestFlat').text(flatTotalInterest.toFixed(0));
+	$('#flatTotalPayment').text((flatTotalPrincipal + flatTotalInterest).toFixed(0));
+
+	  
     });
   });
+  
 </script>
 
 </body>
